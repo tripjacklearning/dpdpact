@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Protection Training — TripJack</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@700&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & TOKENS ──────────────────────────────────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#1B1B2F;--bg:#F5F0E8;--yellow:#FFD93D;--red:#FF6B6B;
+  --green:#6BCB77;--blue:#4D96FF;--dark:#1B3A6B;
+  --panel:#FFFDF5;--border:3px solid var(--ink);
+  --shadow:5px 5px 0 var(--ink);--radius:6px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ─── TOPBAR ──────────────────────────────────────────────────── */
+.topbar{background:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;flex-shrink:0;}
+.topbar-logo{font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;color:var(--yellow);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.topbar-hey{color:#ccc;font-size:13px;}
+.topbar-hey span{color:var(--yellow);font-weight:700;}
+.prog-badge{background:var(--yellow);color:var(--ink);font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px;padding:4px 12px;border-radius:20px;}
+
+/* ─── LAYOUT ──────────────────────────────────────────────────── */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* ─── SIDEBAR ─────────────────────────────────────────────────── */
+.sidebar{width:240px;background:var(--ink);overflow-y:auto;flex-shrink:0;padding:16px 0 24px;}
+.sb-section{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:#888;padding:16px 16px 6px;text-transform:uppercase;}
+.sb-mod{padding:0;}
+.sb-mod-hdr{display:flex;align-items:center;gap:8px;padding:9px 16px;cursor:pointer;transition:background .15s;}
+.sb-mod-hdr:hover{background:rgba(255,255,255,.06);}
+.sb-mod-hdr.active{background:rgba(255,211,61,.12);}
+.sb-mod-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bangers',cursive;font-size:13px;flex-shrink:0;}
+.sb-mod-num.done{background:var(--green);color:var(--ink);}
+.sb-mod-num.active{background:var(--yellow);color:var(--ink);}
+.sb-mod-num.locked{background:#333;color:#666;}
+.sb-mod-num.available{background:var(--dark);color:#ccc;}
+.sb-mod-label{font-size:12px;color:#ccc;font-weight:600;line-height:1.3;}
+.sb-mod-hdr.active .sb-mod-label{color:var(--yellow);}
+.sb-mod-hdr.locked-mod{cursor:not-allowed;opacity:.5;}
+.lock-icon{font-size:11px;color:#555;margin-left:auto;}
+
+/* ─── MAIN ────────────────────────────────────────────────────── */
+.main{flex:1;overflow-y:auto;padding:28px 32px;}
+
+/* ─── SCREENS ─────────────────────────────────────────────────── */
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* ─── LANDING ─────────────────────────────────────────────────── */
+.landing{max-width:600px;margin:40px auto;text-align:center;}
+.landing-title{font-family:'Bangers',cursive;font-size:52px;color:var(--dark);letter-spacing:3px;line-height:1.1;margin-bottom:12px;}
+.landing-sub{font-size:15px;color:#555;margin-bottom:36px;line-height:1.6;}
+.landing-form{background:var(--panel);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;text-align:left;}
+.form-label{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dark);margin-bottom:6px;display:block;}
+.form-input{width:100%;padding:10px 14px;border:2px solid var(--ink);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:14px;background:#fff;margin-bottom:16px;}
+.form-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(77,150,255,.2);}
+.btn-start{width:100%;padding:14px;background:var(--yellow);border:var(--border);border-radius:4px;box-shadow:var(--shadow);font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;cursor:pointer;transition:transform .1s,box-shadow .1s;}
+.btn-start:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink);}
+.btn-start:active{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--ink);}
+
+/* ─── MODULE SCREEN ───────────────────────────────────────────── */
+.mod-screen{max-width:860px;margin:0 auto;}
+.mod-header{margin-bottom:20px;}
+.mod-tag{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dark);margin-bottom:4px;}
+.mod-title{font-family:'Bangers',cursive;font-size:36px;color:var(--dark);letter-spacing:2px;}
+.mod-desc{font-size:14px;color:#555;margin-top:6px;line-height:1.5;}
+
+/* ─── VIDEO PLAYER ────────────────────────────────────────────── */
+.player-wrap{background:var(--panel);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px;}
+.player-video-box{position:relative;width:100%;background:#000;}
+video{width:100%;display:block;max-height:480px;background:#000;}
+.player-controls{padding:14px 16px;background:var(--panel);border-top:2px solid var(--ink);}
+.watch-bar-wrap{height:8px;background:#e0dbd0;border-radius:4px;overflow:hidden;margin-bottom:10px;cursor:pointer;position:relative;}
+.watch-bar-fill{height:100%;background:var(--yellow);border-radius:4px;transition:width .3s;}
+.watch-bar-blocked{position:absolute;top:0;right:0;height:100%;background:rgba(255,107,107,.35);border-radius:0 4px 4px 0;}
+.player-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.player-time{font-family:'Comic Neue',cursive;font-weight:700;font-size:13px;color:var(--dark);}
+.watch-note{font-size:12px;color:#777;font-style:italic;}
+.btn-quiz{padding:10px 22px;background:var(--yellow);border:2px solid var(--ink);border-radius:4px;font-family:'Bangers',cursive;font-size:17px;letter-spacing:1.5px;cursor:pointer;transition:transform .1s,opacity .2s;}
+.btn-quiz:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+.btn-quiz:not(:disabled):hover{transform:translate(-1px,-1px);}
+.skip-warning{font-family:'Comic Neue',cursive;font-weight:700;font-size:12px;color:var(--red);margin-top:6px;display:none;}
+
+/* ─── QUIZ SCREEN ─────────────────────────────────────────────── */
+.quiz-wrap{background:var(--panel);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;max-width:860px;margin:0 auto;}
+.quiz-title{font-family:'Bangers',cursive;font-size:26px;color:var(--dark);letter-spacing:2px;margin-bottom:4px;}
+.quiz-sub{font-size:13px;color:#666;margin-bottom:24px;}
+.q-item{margin-bottom:24px;}
+.q-text{font-size:15px;font-weight:700;margin-bottom:12px;line-height:1.4;}
+.q-num{color:var(--dark);margin-right:6px;}
+.opt-btn{display:flex;align-items:flex-start;gap:10px;width:100%;padding:11px 14px;background:#fff;border:2px solid #ddd;border-radius:4px;margin-bottom:8px;cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;font-size:14px;transition:border-color .15s,background .15s;}
+.opt-btn:hover:not(:disabled){border-color:var(--blue);background:#f0f6ff;}
+.opt-btn.selected{border-color:var(--blue);background:#e8f2ff;}
+.opt-btn.correct{border-color:var(--green);background:#efffef;}
+.opt-btn.wrong{border-color:var(--red);background:#fff0f0;}
+.opt-btn:disabled{cursor:default;}
+.opt-key{width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-family:'Bangers',cursive;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.q-exp{font-size:13px;color:#444;background:#f8f6f0;border-left:3px solid var(--yellow);padding:10px 14px;border-radius:0 4px 4px 0;margin-top:8px;line-height:1.5;display:none;}
+.quiz-footer{display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding-top:20px;border-top:2px solid #e0dbd0;}
+.btn-submit{padding:12px 28px;background:var(--yellow);border:var(--border);border-radius:4px;box-shadow:var(--shadow);font-family:'Bangers',cursive;font-size:20px;letter-spacing:1.5px;cursor:pointer;}
+.btn-submit:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+.quiz-result{margin-top:20px;padding:20px;border-radius:var(--radius);border:var(--border);text-align:center;display:none;}
+.quiz-result.pass{background:#efffef;border-color:var(--green);}
+.quiz-result.fail{background:#fff0f0;border-color:var(--red);}
+.result-score{font-family:'Bangers',cursive;font-size:42px;letter-spacing:2px;}
+.result-score.pass{color:var(--green);}
+.result-score.fail{color:var(--red);}
+.result-msg{font-size:14px;margin-top:6px;color:#444;}
+.btn-next-mod{margin-top:14px;padding:12px 28px;background:var(--green);border:var(--border);border-radius:4px;box-shadow:var(--shadow);font-family:'Bangers',cursive;font-size:20px;letter-spacing:1.5px;cursor:pointer;color:var(--ink);}
+.btn-retry{margin-top:14px;padding:12px 28px;background:var(--red);border:var(--border);border-radius:4px;box-shadow:var(--shadow);font-family:'Bangers',cursive;font-size:20px;letter-spacing:1.5px;cursor:pointer;color:#fff;}
+
+/* ─── FINAL ASSESSMENT ────────────────────────────────────────── */
+.fa-locked{text-align:center;max-width:500px;margin:60px auto;background:var(--panel);border:var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:40px;}
+.fa-locked-icon{font-size:56px;margin-bottom:16px;}
+.fa-locked-title{font-family:'Bangers',cursive;font-size:28px;color:var(--dark);letter-spacing:2px;margin-bottom:10px;}
+.fa-locked-msg{font-size:14px;color:#555;line-height:1.6;}
+
+/* ─── CERT SCREEN ─────────────────────────────────────────────── */
+.cert-wrap{max-width:640px;margin:0 auto;text-align:center;}
+.cert-box{background:var(--panel);border:4px solid var(--dark);border-radius:var(--radius);box-shadow:var(--shadow);padding:48px 40px;}
+.cert-top{font-family:'Bangers',cursive;font-size:14px;letter-spacing:3px;color:#999;margin-bottom:8px;}
+.cert-title{font-family:'Bangers',cursive;font-size:40px;color:var(--dark);letter-spacing:3px;line-height:1.1;margin-bottom:24px;}
+.cert-name{font-family:'Bangers',cursive;font-size:32px;color:var(--dark);margin-bottom:4px;}
+.cert-detail{font-size:14px;color:#555;margin-bottom:6px;}
+.cert-id{font-size:12px;color:#888;margin-top:16px;font-family:'Comic Neue',cursive;font-weight:700;}
+.cert-star{font-size:48px;margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">📋 DATA TRAINING</div>
+  <div class="topbar-right">
+    <div class="topbar-hey">Hey <span id="hn">there</span>!</div>
+    <div class="prog-badge" id="pb">0/6 ✓</div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sb">
+    <div class="sb-section">Modules</div>
+    <div id="sb-mods"></div>
+    <div class="sb-section" style="margin-top:8px;">Assessment</div>
+    <div id="sb-fa"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main" id="main">
+
+    <!-- LANDING -->
+    <div class="screen active" id="s-landing">
+      <div class="landing">
+        <div class="landing-title">DPDP Act<br>Awareness Training</div>
+        <div class="landing-sub">TripJack + Volaron · 2026<br>6 modules · Mini-assessments · Final certificate</div>
+        <div class="landing-form">
+          <label class="form-label" for="fn">Full Name</label>
+          <input class="form-input" id="fn" type="text" placeholder="Your full name" autocomplete="name">
+          <label class="form-label" for="fe">TripJack Email</label>
+          <input class="form-input" id="fe" type="email" placeholder="name@tripjack.com" autocomplete="email">
+          <label class="form-label" for="feid">Employee ID</label>
+          <input class="form-input" id="feid" type="text" placeholder="e.g. TJ-1234" autocomplete="off">
+          <button class="btn-start" onclick="startTraining()">BEGIN TRAINING →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULE SCREENS (generated) -->
+    <div id="mod-screens"></div>
+
+    <!-- FINAL ASSESSMENT -->
+    <div class="screen" id="s-fa">
+      <div id="fa-content"></div>
+    </div>
+
+    <!-- CERTIFICATE -->
+    <div class="screen" id="s-cert">
+      <div class="cert-wrap">
+        <div class="cert-box">
+          <div class="cert-star">🏆</div>
+          <div class="cert-top">CERTIFICATE OF COMPLETION</div>
+          <div class="cert-title">DPDP Act<br>Awareness Training</div>
+          <div class="cert-name" id="cert-name"></div>
+          <div class="cert-detail" id="cert-detail"></div>
+          <div class="cert-detail" id="cert-org"></div>
+          <div class="cert-detail" id="cert-date"></div>
+          <div class="cert-id" id="cert-id"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+
+var SCRIPT_URL = '<?= scriptUrl ?>';
+
+var MODS = [
+  { id:0, label:"Basics of DPDP Act",         color:"#9B59B6", vidUrl:"https://drive.google.com/file/d/1fnmv-8ax2wjAACJOzb1ivF3PDcWy0pQB/preview", dur:0 },
+  { id:1, label:"Understanding Personal Data", color:"#2980B9", vidUrl:"https://drive.google.com/file/d/10i1dds6RwrCJeuf4-vJs87Cy0ae-WPkW/preview", dur:0 },
+  { id:2, label:"Consent & Employee Data",     color:"#27AE60", vidUrl:"https://drive.google.com/file/d/16fd_vDUFj-YIJF8BJR7ubV4AykkaW6Tl/preview", dur:0 },
+  { id:3, label:"Data Principal Rights",       color:"#E67E22", vidUrl:"https://drive.google.com/file/d/1A8ZrHCO5H2i0uE_H2ZyVnSFnaHcIrIJE/preview", dur:0 },
+  { id:4, label:"Handling Data Right",         color:"#C0392B", vidUrl:"https://drive.google.com/file/d/1WBvWLvU8ZnLRPbzVP8WfMvgDTSemhUkF/preview", dur:0 },
+  { id:5, label:"Dos, Don'ts & Golden Rules",  color:"#1B3A6B", vidUrl:"https://drive.google.com/file/d/109hogi0WzP0ysCEdAgxgX63N1k1BaOkP/preview", dur:0 },
+];
+
+// ─── Quiz bank ─────────────────────────────────────────────────
+// 5 questions per module (m0–m5). All drawn from module content.
+var QB = [
+  // MODULE 0 — Basics of DPDP Act
+  {m:0,q:"The DPDP Act was enacted in which year?",opts:["2017","2020","2023","2025"],ans:"C",exp:"The Digital Personal Data Protection Act was passed by Parliament in August 2023 — India's first comprehensive standalone data protection law."},
+  {m:0,q:"Which Supreme Court judgment declared privacy a fundamental right in India?",opts:["Maneka Gandhi v. Union of India","Justice K.S. Puttaswamy v. Union of India","Shreya Singhal v. Union of India","NALSA v. Union of India"],ans:"B",exp:"The 2017 Puttaswamy judgment unanimously held that privacy is a fundamental right under the Indian Constitution, creating legal pressure for a data protection law."},
+  {m:0,q:"TripJack shares passenger data with a hotel partner. In this scenario, TripJack is the _____ and the hotel is the _____.",opts:["Data Principal / Data Processor","Data Fiduciary / Data Processor","Data Processor / Data Fiduciary","Data Principal / Data Fiduciary"],ans:"B",exp:"TripJack determines the purpose of processing (Data Fiduciary). The hotel processes data on TripJack's instruction (Data Processor)."},
+  {m:0,q:"What is the maximum penalty for failing to implement adequate security safeguards under the DPDP Act?",opts:["₹50 Crore","₹100 Crore","₹200 Crore","₹250 Crore"],ans:"D",exp:"Penalty Tier 1 — failure to implement reasonable security safeguards — carries the highest penalty of up to ₹250 Crore."},
+  {m:0,q:"Which of the following is an example of 'deemed consent' — requiring no fresh consent?",opts:["Using an employee's photo in a marketing video","Submitting PF contributions as required by law","Sharing employee data with a new survey tool","Sending a marketing SMS to a customer's booking number"],ans:"B",exp:"PF submission is a legal employment obligation — it falls under deemed consent and does not require separate consent from the employee."},
+
+  // MODULE 1 — Understanding Personal Data
+  {m:1,q:"Which of the following is NOT personal data under the DPDP Act?",opts:["A customer's PNR number","A generic company office address","An employee's Aadhaar number","A passenger's date of birth"],ans:"B",exp:"A generic company office address does not identify an individual. All other options — PNR (linked to a named passenger), Aadhaar, and date of birth — are personal data."},
+  {m:1,q:"An employee scans a customer's paper ID document and saves it to their laptop. The scanned file is:",opts:["Physical data — the original was paper","Not covered by the DPDP Act","Digital personal data covered by the DPDP Act","Only covered if stored in a company system"],ans:"C",exp:"The moment a physical document is scanned or photographed, it becomes digital personal data and falls fully under the DPDP Act."},
+  {m:1,q:"Which department does NOT routinely handle personal data in their daily work?",opts:["Air Operations","Hotel Operations","HR","None — every department handles personal data"],ans:"D",exp:"Every department at TripJack handles personal data: Air Ops (passports), Hotel Ops (guest data), Sales (agent contacts), Finance (bank details), HR (employee records), L&D (training data)."},
+  {m:1,q:"A colleague says: 'I just forwarded the file — I didn't process any data.' Is this correct?",opts:["Yes — forwarding is not processing","No — forwarding personal data is processing under the Act","Only if the file contained sensitive data","Only if it was sent outside the company"],ans:"B",exp:"Forwarding, sharing, transmitting, or transferring personal data all constitute 'processing' under the DPDP Act. There is no exemption for simply forwarding."},
+  {m:1,q:"Data becomes a risk in three specific situations. Which option correctly identifies all three?",opts:["Lost device, software failure, old passwords","Wrong recipient, wrong purpose, accidental exposure","Hacking, phishing, malware","Data entry errors, system crashes, old files"],ans:"B",exp:"The three risk situations are: data reaching the wrong person, data being used for a purpose beyond what it was collected for, and accidental exposure through human error."},
+
+  // MODULE 2 — Consent & Employee Data
+  {m:2,q:"Which of the following does NOT require separate consent from an employee?",opts:["Using their photo in a company promotional video","Processing their salary through payroll","Sending them marketing messages on their personal number","Posting their photo on company social media without consent"],ans:"B",exp:"Payroll processing is a legal employment obligation — it falls under deemed consent. All other options involve uses beyond the employment purpose and require separate consent."},
+  {m:2,q:"An employee wishes to withdraw their consent for their work photo to be used in marketing materials. TripJack must:",opts:["Stop using it after a reasonable notice period","Send one final campaign and then stop","Stop immediately — no conditions, no grace period","Seek management approval before stopping"],ans:"C",exp:"Consent withdrawal must be acted on immediately. There is no grace period, no final campaign, and no conditions. This applies to marketing use of any personal data."},
+  {m:2,q:"Where can TripJack employees access their Employee Privacy Notice?",opts:["Only during onboarding","On request from HR","On Keka, accessible at any time","It is emailed annually"],ans:"C",exp:"The Employee Privacy Notice is available on Keka at any time. Employees acknowledged it at joining, but can review it whenever they wish."},
+  {m:2,q:"For consent to be valid under the DPDP Act, it must be:",opts:["Written and witnessed","Free, specific, informed, and withdrawable","Approved by the Privacy Officer","Collected annually and renewed"],ans:"B",exp:"The four conditions for valid consent under the DPDP Act are: freely given, specific to the purpose, informed (clearly explained), and withdrawable at any time."},
+  {m:2,q:"A manager wants to use an employee's phone number collected during onboarding to invite them to a company event via WhatsApp. This requires:",opts:["No consent — it's an internal matter","Fresh separate consent for this specific purpose","Only manager approval","Only if the event is outside working hours"],ans:"B",exp:"The phone number was collected for employment purposes. Using it for an event invitation — even an internal one — is a different purpose and requires fresh, separate consent."},
+
+  // MODULE 3 — Data Principal Rights
+  {m:3,q:"Which of the following is NOT a Data Principal right under the DPDP Act?",opts:["Right to Know","Right to Correct","Right to Monetary Compensation","Right to Erasure"],ans:"C",exp:"The four Data Principal rights are: Right to Know, Right to Correct, Right to Erasure, and Right to Raise Concerns. Monetary compensation is not one of the four statutory rights."},
+  {m:3,q:"A customer calls and asks TripJack to delete all their personal data. What is the correct first step?",opts:["Delete the data immediately from all systems","Explain that this is not possible under any circumstances","Forward the request to privacy@tripjack.com the same day","Ask the customer to submit the request in writing before acting"],ans:"C",exp:"Any Data Principal rights request must be forwarded to the Privacy Officer at privacy@tripjack.com the same day. Never act on a rights request alone — the Privacy Officer determines the correct response."},
+  {m:3,q:"TripJack needs to share a hotel check-in list with a partner hotel. The list should include:",opts:["Name, passport number, contact number, and nationality","Name and room type only — the minimum required for check-in","Name, passport, email, and payment details","Everything TripJack holds to be helpful to the hotel"],ans:"B",exp:"Vendor sharing must follow the minimum necessary principle — share only what the recipient genuinely needs for their specific purpose. A hotel needs name and room type for check-in, not passport or payment details."},
+  {m:3,q:"Which of the following correctly describes 'Customers & Passengers' as Data Principals at TripJack?",opts:["All customers are direct Data Principals with TripJack","Agents are TripJack's primary data principals; passengers are the end data subjects","Passengers have no Data Principal rights as they booked through agents","Only passengers on corporate bookings are Data Principals"],ans:"B",exp:"In TripJack's booking model, agents are the primary data principals in the direct relationship. Passengers are end data subjects whose personal data is processed to fulfil the booking."},
+  {m:3,q:"TripJack wants to share customer data with a vendor based in Singapore. What is required?",opts:["No additional steps if the vendor has a privacy policy","Compliance team approval for overseas data transfer","Only an email confirmation to IT","Approval is automatic for group company transfers"],ans:"B",exp:"Any transfer of personal data outside India requires Compliance team approval. Being a group company does not constitute automatic authorisation. This applies to all overseas vendors."},
+
+  // MODULE 4 — Handling Data Right
+  {m:4,q:"Arjun sent a bulk email to 150 agents using CC instead of BCC. This is:",opts:["Not a data issue — email addresses are not personal data","A data violation — it exposed all agent email addresses without their consent","Only a violation if the agents complained","Only a violation if the email contained customer data"],ans:"B",exp:"Email addresses are personal data. Using CC in a bulk email exposes every recipient's email address to all others without their consent — this is itself a data violation under the DPDP Act."},
+  {m:4,q:"If you discover you've accidentally sent a file with customer passport details to the wrong email, your first action is:",opts:["Delete the email from your sent folder immediately","Wait to see if the recipient responds before escalating","Report to privacy@tripjack.com immediately — the same minute","Recall the email and resolve it yourself before telling anyone"],ans:"C",exp:"Report first — immediately. Then attempt recall. Do not delete evidence. Do not try to resolve it alone. Speed of reporting is critical — it determines how much damage can be limited."},
+  {m:4,q:"Why is WhatsApp not an approved channel for sharing personal data at TripJack?",opts:["The encryption is not strong enough","TripJack has no control or oversight over WhatsApp communications — a lost phone exposes all data","WhatsApp messages can be read by third parties","WhatsApp does not support file attachments"],ans:"B",exp:"The core reason is control: TripJack cannot oversee, audit, or recover data from WhatsApp. A lost or hacked device immediately exposes all data in those conversations. Encryption doesn't solve the control problem."},
+  {m:4,q:"Which of the following is NOT a data breach?",opts:["Sending an email to the wrong recipient","A colleague accessing a database they're not authorised to use","Using a strong password for a company system","Losing a laptop containing customer records"],ans:"C",exp:"Using a strong password is a security best practice — not a breach. All others are breaches: wrong recipient (exposure), unauthorised access, and lost device all constitute incidents under the DPDP Act."},
+  {m:4,q:"After reporting a data breach, what should you NOT do?",opts:["Take immediate containment action such as recalling an email","Wait for IT and Compliance to take over","Delete the breached file or email to minimise damage","Document what happened as clearly as you can"],ans:"C",exp:"Never delete evidence — even with good intentions. Investigators need it. Destroying evidence — intentionally or 'helpfully' — makes things significantly worse legally and operationally."},
+
+  // MODULE 5 — Golden Rules
+  {m:5,q:"Which of the 5 Golden Rules means: 'Only collect information that is strictly necessary for the task'?",opts:["Share Carefully","Use for Its Purpose","Collect Less","Secure Properly"],ans:"C",exp:"'Collect Less' means every additional piece of data you hold is additional risk and additional liability. If you don't need it, don't collect it."},
+  {m:5,q:"A booking agent's contact number was collected during their portal registration. It can be used for:",opts:["Any internal communication — they're a registered partner","Only for matters directly related to their bookings with TripJack","Marketing new products — they're already a customer","Any purpose approved by your manager"],ans:"B",exp:"Data can only be used for the purpose it was collected. Agent contact data collected at registration is for booking-related communication — not marketing or other uses without fresh consent."},
+  {m:5,q:"An employee notices they made a mistake that caused a minor data exposure. The correct approach is:",opts:["Fix it quietly and monitor the situation to avoid unnecessary alarm","Report immediately to privacy@tripjack.com — honest mistake plus quick report equals handled properly","Only report if the exposure affected more than 10 people","Discuss it with their manager and decide together whether to report"],ans:"B",exp:"Honest mistake plus immediate report equals handled properly — every time. The size of the incident does not change the obligation to report. Attempted cover-ups — even of minor incidents — have serious consequences."},
+  {m:5,q:"Rule 4 — 'Secure Properly' — includes which of the following daily habits?",opts:["Lock your screen every time you step away","Only share data on company-approved channels","Never take screenshots of sensitive data on personal devices","All of the above"],ans:"D",exp:"Rule 4 covers all security habits: Win+L to lock your screen, using only approved tools for data sharing, and never copying sensitive data to personal devices or accounts."},
+  {m:5,q:"How many questions are in the Final Assessment, and what is the pass score?",opts:["10 questions, 60% to pass","15 questions, 70% to pass","18 questions, 70% to pass","20 questions, 80% to pass"],ans:"C",exp:"The Final Assessment has 18 questions drawn from all 6 modules. You need 70% (13 out of 18) to pass and earn your certificate of completion."},
+];
+
+// Final assessment — 18 questions, one from each topic drawn randomly
+var FA_QB = [
+  {q:"What does the DPDP Act stand for?",opts:["Digital Privacy and Data Protection Act","Digital Personal Data Protection Act","Data Privacy and Digital Protection Act","Digital Personal Data Processing Act"],ans:"B",exp:"DPDP = Digital Personal Data Protection Act, enacted August 2023."},
+  {q:"Which body enforces the DPDP Act?",opts:["Ministry of Electronics and IT","Reserve Bank of India","Data Protection Board of India","Supreme Court of India"],ans:"C",exp:"The Data Protection Board of India is the independent regulatory and adjudicatory body established under the DPDP Act."},
+  {q:"Which of the following is sensitive personal data under the DPDP Act?",opts:["A person's full name","Their email address","Biometric data such as fingerprints","Their employer's name"],ans:"C",exp:"Biometric data (fingerprints, facial data) is sensitive personal data requiring extra care. Name and email are personal data but not the most sensitive category."},
+  {q:"An agent books a flight for a passenger. In TripJack's data relationship, who is the Data Principal?",opts:["TripJack","The airline","The agent (primary) and the passenger (end data subject)","Only the passenger — the agent is not a person"],ans:"C",exp:"Agents are TripJack's primary data principals in the booking relationship. Passengers are end data subjects whose data is processed to fulfil the booking."},
+  {q:"Deemed consent covers which of the following situations?",opts:["Sending a marketing email to a customer's booking contact","Posting an employee's photo on LinkedIn","Processing payroll as an employment obligation","Using a customer's phone number for a survey"],ans:"C",exp:"Payroll processing is a legal employment obligation and falls under deemed consent. The other options all require separate, specific consent."},
+  {q:"A customer books a flight through TripJack. Their contact details can be used for:",opts:["Any future marketing campaigns by TripJack","Sending booking confirmation and travel updates","Sharing with TripJack's hotel partners for marketing","Calling them about unrelated holiday packages"],ans:"B",exp:"Booking data — including contact details — can only be used to fulfil that specific booking. All other uses require fresh consent."},
+  {q:"What is the maximum penalty under the DPDP Act?",opts:["₹50 Crore","₹100 Crore","₹200 Crore","₹250 Crore"],ans:"D",exp:"₹250 Crore — for failure to implement reasonable security safeguards to prevent a data breach. This is the highest penalty tier."},
+  {q:"An employee accidentally emails a salary sheet to the wrong person. This is:",opts:["A data breach only if the recipient misuses the data","Not a breach because it was accidental","A data breach — accidental disclosure is still a breach","Only a breach if it contained more than 10 employees' data"],ans:"C",exp:"Accidental disclosure is a breach. 'Accidental' does not mean 'not a breach' — it means the incident must be reported and responded to urgently."},
+  {q:"What are the correct four steps after discovering a data breach?",opts:["Investigate, document, fix, and tell HR at month end","Report immediately → don't delete evidence → contain → hand over to IT/Compliance","Delete evidence, fix the issue, tell your manager, monitor","Wait 24 hours, then report if it seems serious"],ans:"B",exp:"The four steps: (1) Report immediately to privacy@tripjack.com, (2) do not delete any evidence, (3) take immediate containment action, (4) let IT and Compliance take over."},
+  {q:"Which of the following is an approved channel for sharing personal data at TripJack?",opts:["Personal Gmail","WhatsApp","Company email or an approved portal","USB drive encrypted with a personal password"],ans:"C",exp:"Company email and approved portals are the only sanctioned channels. Personal Gmail, WhatsApp, and USB drives are never appropriate for personal data."},
+  {q:"An employee uses CC instead of BCC when emailing 200 agents. This:",opts:["Is fine — agents are business contacts","Is a data violation — it exposes all 200 email addresses without consent","Is only a problem if the email contained customer data","Only needs to be reported if agents complain"],ans:"B",exp:"Email addresses are personal data. Using CC exposes all 200 addresses to every recipient without their consent — a direct violation of the DPDP Act's data minimisation principle."},
+  {q:"A vendor contact asks to have their phone number removed from TripJack's records. What is the correct first step?",opts:["Delete it from your personal contacts and the email thread","Explain that vendor data cannot be deleted","Forward the request to privacy@tripjack.com the same day","Refer them to the vendor management team"],ans:"C",exp:"A vendor contact is a Data Principal. Any rights request — including from vendors — must be forwarded to the Privacy Officer at privacy@tripjack.com the same day. Never act on it alone."},
+  {q:"Rule 3 — 'Share Carefully' — requires you to verify which four things before every share?",opts:["Date, time, file size, and format","Right person, right channel, right amount, right approval","Sender, recipient, subject line, and attachment name","Manager approval, IT clearance, HR sign-off, and Legal review"],ans:"B",exp:"Share Carefully = right person (authorised recipient), right channel (company email or approved portal), right amount (minimum necessary), right approval (vendor approved, overseas clearance if needed)."},
+  {q:"Which of the 5 Golden Rules addresses: 'Lock your screen, use company tools, never copy data to personal devices'?",opts:["Collect Less","Use for Its Purpose","Share Carefully","Secure Properly"],ans:"D",exp:"Rule 4 — Secure Properly — covers all physical and digital security habits: screen locking, approved tools, no personal devices for work data."},
+  {q:"An employee's consent for TripJack to use their photo in marketing is withdrawn. TripJack must:",opts:["Remove it after the current campaign ends","Remove it after giving reasonable notice","Stop using it immediately — no conditions","Seek a management override to complete current campaigns"],ans:"C",exp:"Consent withdrawal requires immediate action. There is no grace period, no final use, no conditions. 'Immediately' means immediately."},
+  {q:"Cross-border data transfer from TripJack to an overseas entity requires:",opts:["Only an email to the overseas entity confirming their privacy policy","No additional steps if TripJack owns the overseas entity","Compliance team approval — being a group company is not automatic authorisation","Only IT approval for the technical transfer"],ans:"C",exp:"Any transfer of personal data outside India requires Compliance team approval. This applies to all overseas entities — including group companies. No transfer is automatic."},
+  {q:"'Collect Less' means which of the following?",opts:["Collect as much data as possible for future use","Only collect what is strictly necessary for the specific task","Ask for consent for everything and then collect as needed","Avoid collecting data altogether wherever possible"],ans:"B",exp:"Collect Less = only collect what is strictly necessary. Excess data = excess liability. If you don't need it for the specific purpose, don't collect it."},
+  {q:"Who is the correct contact for ALL data protection concerns at TripJack?",opts:["Your department head","The IT helpdesk","privacy@tripjack.com — TripJack's Privacy Officer","dilip.balasubramanian@tripjack.com"],ans:"C",exp:"All data protection concerns — breaches, consent questions, vendor approvals, rights requests — go to privacy@tripjack.com. This is TripJack's Privacy Officer and the single point of contact for all data protection matters."},
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+
+var L = { name:'', email:'', empid:'' };
+var S = { // progress state, persisted to localStorage
+  unlocked: [0],           // module ids unlocked (0 always unlocked)
+  vidDone:  [],            // module ids where video is fully watched
+  quizPassed: [],          // module ids where quiz passed
+  faAttempts: 0,
+  faBestScore: 0,
+  certified: false,
+  certId: ''
+};
+
+function saveState() {
+  try { localStorage.setItem('dpdp_' + L.empid, JSON.stringify(S)); } catch(e){}
+}
+function loadState() {
+  try {
+    var raw = localStorage.getItem('dpdp_' + L.empid);
+    if (raw) { var s = JSON.parse(raw); for (var k in s) S[k] = s[k]; }
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STARTUP
+// ═══════════════════════════════════════════════════════════════
+
+function startTraining() {
+  var n=document.getElementById('fn').value.trim();
+  var e=document.getElementById('fe').value.trim();
+  var i=document.getElementById('feid').value.trim();
+  if(!n||!e||!i){alert('Please fill in all fields.');return;}
+  if(!e.includes('@')){alert('Please enter a valid email.');return;}
+  L.name=n; L.email=e; L.empid=i;
+  document.getElementById('hn').textContent = n.split(' ')[0];
+  loadState();
+  show('s-m0');
+  buildSidebar();
+  updateBadge();
+}
+
+document.addEventListener('keydown',function(ev){if(ev.key==='Enter' && document.getElementById('s-landing').classList.contains('active'))startTraining();});
+
+// ═══════════════════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  document.querySelector('.main').scrollTo(0,0);
+  buildSidebar();
+  updateBadge();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUILD MODULE SCREENS
+// ═══════════════════════════════════════════════════════════════
+
+function buildModScreens() {
+  var wrap = document.getElementById('mod-screens');
+  wrap.innerHTML = '';
+  MODS.forEach(function(mod) {
+    // ── Video screen ──
+    var vs = document.createElement('div');
+    vs.className = 'screen'; vs.id = 's-m' + mod.id;
+    vs.innerHTML = buildVideoScreenHTML(mod);
+    wrap.appendChild(vs);
+    // ── Quiz screen ──
+    var qs = document.createElement('div');
+    qs.className = 'screen'; qs.id = 's-q' + mod.id;
+    qs.innerHTML = buildQuizScreenHTML(mod);
+    wrap.appendChild(qs);
+  });
+}
+
+function buildVideoScreenHTML(mod) {
+  var vidSrc = mod.vidUrl ? mod.vidUrl : '';
+  var videoHtml = vidSrc
+    ? '<video id="vid-' + mod.id + '" preload="metadata" controlslist="nodownload nofullscreen noremoteplayback" disablepictureinpicture oncontextmenu="return false;">' +
+      '<source src="' + vidSrc + '" type="video/mp4"></video>'
+    : '<div style="background:#111;color:#888;padding:60px;text-align:center;font-family:\'Comic Neue\',cursive;font-weight:700;font-size:14px;">Video coming soon</div>';
+  return '<div class="mod-screen">' +
+    '<div class="mod-header">' +
+      '<div class="mod-tag">MODULE ' + mod.id + '</div>' +
+      '<div class="mod-title">' + mod.label + '</div>' +
+    '</div>' +
+    '<div class="player-wrap">' +
+      '<div class="player-video-box">' + videoHtml + '</div>' +
+      '<div class="player-controls">' +
+        '<div class="watch-bar-wrap" id="wbw-' + mod.id + '" onclick="seekClick(event,' + mod.id + ')" style="cursor:pointer;">' +
+          '<div class="watch-bar-fill" id="wbf-' + mod.id + '" style="width:0%"></div>' +
+          '<div class="watch-bar-blocked" id="wbb-' + mod.id + '" style="width:100%"></div>' +
+        '</div>' +
+        '<div class="player-row">' +
+          '<span class="player-time" id="pt-' + mod.id + '">0:00 / 0:00</span>' +
+          '<span class="watch-note" id="wn-' + mod.id + '">Watch the full video to unlock the quiz</span>' +
+          '<button class="btn-quiz" id="bq-' + mod.id + '" disabled onclick="goQuiz(' + mod.id + ')">TAKE QUIZ →</button>' +
+        '</div>' +
+        '<div class="skip-warning" id="sw-' + mod.id + '">⚠ Forward skip blocked — please watch the video in full</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function buildQuizScreenHTML(mod) {
+  var qs = QB.filter(function(q){return q.m===mod.id;});
+  var html = '<div class="quiz-wrap">' +
+    '<div class="quiz-title">Module ' + mod.id + ' Quiz</div>' +
+    '<div class="quiz-sub">5 questions · 70% to pass · Must rewatch video if you fail</div>';
+  qs.forEach(function(q,qi) {
+    html += '<div class="q-item" id="qi-m' + mod.id + '-' + qi + '">' +
+      '<div class="q-text"><span class="q-num">Q' + (qi+1) + '.</span>' + q.q + '</div>';
+    q.opts.forEach(function(opt, oi) {
+      var key = ['A','B','C','D'][oi];
+      html += '<button class="opt-btn" id="ob-m' + mod.id + '-' + qi + '-' + oi + '" onclick="selectOpt(this,' + mod.id + ',' + qi + ',' + oi + ')">' +
+        '<div class="opt-key">' + key + '</div><div>' + opt + '</div></button>';
+    });
+    html += '<div class="q-exp" id="qe-m' + mod.id + '-' + qi + '">' + q.exp + '</div></div>';
+  });
+  html += '<div class="quiz-footer">' +
+    '<span style="font-size:13px;color:#888;" id="qa-m' + mod.id + '">Select an answer for each question</span>' +
+    '<button class="btn-submit" id="bs-m' + mod.id + '" disabled onclick="submitQuiz(' + mod.id + ')">SUBMIT →</button>' +
+    '</div>' +
+    '<div class="quiz-result" id="qr-m' + mod.id + '"></div>' +
+  '</div>';
+  return '<div class="mod-screen">' + html + '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIDEO PLAYER LOGIC
+// ═══════════════════════════════════════════════════════════════
+
+// ── Timer-based video unlock (Drive iframe = no JS seek access) ──────────
+// Video durations in seconds — update these after measuring each video
+// ── Native <video> seek-blocking ─────────────────────────────────
+var vidState = {}; // per-mod: { maxWatched }
+
+function initVideo(modId) {
+  var vid = document.getElementById('vid-' + modId);
+  if (!vid) return;
+  if (!vidState[modId]) vidState[modId] = { maxWatched: 0 };
+
+  // Already completed — unlock immediately
+  if (S.vidDone.indexOf(modId) !== -1) {
+    unlockQuizBtn(modId);
+    return;
+  }
+
+  vid.addEventListener('timeupdate', function() {
+    if (!vid.duration) return;
+    var mw = vidState[modId].maxWatched;
+
+    // Block forward seek — snap back if jumped ahead by more than 1.5s
+    if (vid.currentTime > mw + 1.5) {
+      vid.currentTime = mw;
+      showSkipWarning(modId);
+      return;
+    }
+
+    // Advance maxWatched
+    if (vid.currentTime > mw) vidState[modId].maxWatched = vid.currentTime;
+
+    // Update custom progress bar (shows watched %, not playback position)
+    var watchedPct = (vidState[modId].maxWatched / vid.duration) * 100;
+    var wbf = document.getElementById('wbf-' + modId);
+    var wbb = document.getElementById('wbb-' + modId);
+    if (wbf) wbf.style.width = watchedPct + '%';
+    if (wbb) wbb.style.width = (100 - watchedPct) + '%';
+
+    // Update time display
+    var pt = document.getElementById('pt-' + modId);
+    if (pt) pt.textContent = fmt(vid.currentTime) + ' / ' + fmt(vid.duration);
+
+    // Unlock at 98%
+    if (watchedPct >= 98 && S.vidDone.indexOf(modId) === -1) {
+      S.vidDone.push(modId);
+      saveState();
+      unlockQuizBtn(modId);
+    }
+  });
+
+  vid.addEventListener('ended', function() {
+    vidState[modId].maxWatched = vid.duration;
+    if (S.vidDone.indexOf(modId) === -1) { S.vidDone.push(modId); saveState(); }
+    unlockQuizBtn(modId);
+  });
+
+  // Block seeking via native seeked event (catches keyboard arrows too)
+  vid.addEventListener('seeking', function() {
+    var mw = vidState[modId].maxWatched;
+    if (vid.currentTime > mw + 1.5) {
+      vid.currentTime = mw;
+      showSkipWarning(modId);
+    }
+  });
+}
+
+function seekClick(ev, modId) {
+  // Custom bar click — only allow scrubbing to already-watched area
+  var vid = document.getElementById('vid-' + modId);
+  if (!vid || !vid.duration) return;
+  var rect = ev.currentTarget.getBoundingClientRect();
+  var pct    = (ev.clientX - rect.left) / rect.width;
+  var target = pct * vid.duration;
+  var mw = vidState[modId] ? vidState[modId].maxWatched : 0;
+  if (target <= mw) {
+    vid.currentTime = target;
+  } else {
+    showSkipWarning(modId);
+  }
+}
+
+function showSkipWarning(modId) {
+  var sw = document.getElementById('sw-' + modId);
+  if (!sw) return;
+  sw.style.display = 'block';
+  sw.style.color = 'var(--red)';
+  if (vidState[modId].swt) clearTimeout(vidState[modId].swt);
+  vidState[modId].swt = setTimeout(function(){ sw.style.display = 'none'; }, 3000);
+}
+
+function unlockQuizBtn(modId) {
+  var bq = document.getElementById('bq-' + modId);
+  if (bq) bq.disabled = false;
+  var wbf = document.getElementById('wbf-' + modId);
+  var wbb = document.getElementById('wbb-' + modId);
+  if (wbf) wbf.style.width = '100%';
+  if (wbb) wbb.style.width = '0%';
+  var wn = document.getElementById('wn-' + modId);
+  if (wn) { wn.textContent = '\u2705 Video complete \u2014 quiz unlocked!'; wn.style.color = 'var(--green)'; }
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+
+function fmt(s) {
+  if (!s || isNaN(s)) return '0:00';
+  var m=Math.floor(s/60), sec=Math.floor(s%60);
+  return m + ':' + (sec<10?'0':'') + sec;
+}
+function shufArr(a) {
+  var b=a.slice();
+  for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}
+  return b;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT — wire up video players after screens are built
+// ═══════════════════════════════════════════════════════════════
+
+buildModScreens();
+
+// Intercept show() calls to init video players lazily
+var _origShow = show;
+show = function(id) {
+  _origShow(id);
+  var m = id.match(/^s-m(\d+)$/);
+  if (m) { setTimeout(function(){ initVideo(parseInt(m[1])); }, 100); }
+};
+
+</script>
+</body>
+</html>
