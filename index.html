@@ -749,12 +749,29 @@ function showCert(name,company,pct,certId){
 // BACKEND POST
 // ═══════════════════════════════════════════════════
 function postData(payload){
-  fetch(SCRIPT_URL,{
-    method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  }).catch(function(e){console.warn('Post failed:',e);});
+  // Apps Script requires the deployment to allow CORS.
+  // We use a hidden form trick to POST JSON as a form field — works with no-cors.
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = SCRIPT_URL;
+  form.target = 'hidden-post-target';
+  form.style.display = 'none';
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'payload';
+  input.value = JSON.stringify(payload);
+  form.appendChild(input);
+  document.body.appendChild(form);
+  // Create hidden iframe as target so page doesn't navigate
+  var iframe = document.createElement('iframe');
+  iframe.name = 'hidden-post-target';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  form.submit();
+  setTimeout(function(){
+    document.body.removeChild(form);
+    document.body.removeChild(iframe);
+  }, 5000);
 }
 
 // ═══════════════════════════════════════════════════
@@ -765,6 +782,45 @@ function fmt(s){
   var m=Math.floor(s/60),sec=Math.floor(s%60);
   return m+':'+(sec<10?'0':'')+sec;
 }
+
+// ═══════════════════════════════════════════════════
+// ADMIN RESET via URL parameter
+// ?reset=TJ-1234     → resets FA attempts only (keeps module progress)
+// ?resetall=TJ-1234  → wipes all progress, full restart
+// ═══════════════════════════════════════════════════
+(function(){
+  var params = new URLSearchParams(window.location.search);
+
+  var resetId = params.get('reset');
+  if (resetId) {
+    var key = 'dpdp_' + resetId;
+    var raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        var s = JSON.parse(raw);
+        s.faAttempts = 0;
+        s.faBestScore = 0;
+        localStorage.setItem(key, JSON.stringify(s));
+        alert('FA attempts reset for ' + resetId + '. They can now attempt the Final Assessment again.');
+      } catch(e) { alert('Reset error: ' + e); }
+    } else {
+      alert('No saved progress found for Employee ID: ' + resetId);
+    }
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  var resetAllId = params.get('resetall');
+  if (resetAllId) {
+    var key = 'dpdp_' + resetAllId;
+    if (localStorage.getItem(key)) {
+      localStorage.removeItem(key);
+      alert('All progress wiped for ' + resetAllId + '. They will start from scratch.');
+    } else {
+      alert('No saved progress found for Employee ID: ' + resetAllId);
+    }
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+})();
 
 // ═══════════════════════════════════════════════════
 // INIT
